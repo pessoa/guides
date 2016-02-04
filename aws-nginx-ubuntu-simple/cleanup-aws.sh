@@ -28,7 +28,7 @@ type -P "$AWS" >/dev/null 2>&1 && echo "Cleaning up Weave AWS Demo environment" 
 MY_R_FILTER="Name=instance-state-name,Values=running"
 MY_GROUP_FILTER="Name=instance.group-name,Values=$WEAVEDEMO_GROUPNAME"
 
-for i in `aws ec2 describe-instances --filters $MY_R_FILTER $MY_GROUP_FILTER --output text | grep ^INSTANCES | awk '{print $8}'`
+for i in `aws ec2 describe-instances --filters $MY_R_FILTER $MY_GROUP_FILTER --output text | grep ^INSTANCES | awk '{print $7}'`
 do
     echo "Terminating AWS Instance $i"
     aws ec2 terminate-instances  --instance-ids $i

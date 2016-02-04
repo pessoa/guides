@@ -78,12 +78,12 @@ aws ec2 authorize-security-group-ingress --group-name $WEAVEDEMO_GROUPNAME --pro
 aws ec2 authorize-security-group-ingress --group-name $WEAVEDEMO_GROUPNAME --protocol tcp --port 6783 --cidr $WEAVEDEMO_CIDR
 aws ec2 authorize-security-group-ingress --group-name $WEAVEDEMO_GROUPNAME --protocol udp --port 6783 --cidr $WEAVEDEMO_CIDR
 aws ec2 create-key-pair --key-name $KEYPAIR --query 'KeyMaterial' --output text > $MY_KEY
-aws ec2 run-instances --image-id $AWS_AMI  --count $WEAVEDEMO_HOSTCOUNT --instance-type t1.micro --key-name $KEYPAIR --security-groups $WEAVEDEMO_GROUPNAME 
+aws ec2 run-instances --image-id $AWS_AMI  --count $WEAVEDEMO_HOSTCOUNT --instance-type t2.micro --key-name $KEYPAIR --security-groups $WEAVEDEMO_GROUPNAME 
 
 chmod 400 $MY_KEY 
 
-echo "Waiting for one minute for our instances to initialize"
-sleep 60
+echo "Waiting for 3 minutes for our instances to initialize"
+sleep 180
 
 OUR_IP_ADDRESSES=$(aws ec2 describe-instances --output text --filters $MY_R_FILTER $MY_G_FILTER | grep ^ASSOCIATION | awk '{print $4}' | sort -u)
 

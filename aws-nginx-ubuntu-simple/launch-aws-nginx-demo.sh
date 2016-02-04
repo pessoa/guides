@@ -50,11 +50,11 @@ function launchApacheDemo() {
     myContainerOffSet=$2
 
     myContainerIP=$(echo "$APP_BASE.$myContainerOffSet")
-    myDnsName=$(echo "ws$myContainerOffSet.weave.local")
+    myDnsName=$(echo "ws.weave.local")
 
     echo "Launching php app container $myDnsName on $myHostIP with $myContainerIP"
 
-    $MY_SSH $SSH_OPTS ubuntu@$myHostIP "sudo weave run --with-dns $myContainerIP/24 -h $myDnsName fintanr/weave-gs-nginx-apache"
+    $MY_SSH $SSH_OPTS ubuntu@$myHostIP "sudo weave run --with-dns $myContainerIP/24 -h $myDnsName pessoa/weave-gs-nginx-apache"
 }
 
 function launchNginx() {
@@ -66,7 +66,7 @@ function launchNginx() {
     myDnsName=nginx.weave.local
 
     echo "Launching nginx front end app container $myDnsName on $myHostIP with $myContainerIP"
-    $MY_SSH $SSH_OPTS ubuntu@$myHostIP "sudo weave run --with-dns $myContainerIP/24 -ti -h $myDnsName -d -p 80:80 fintanr/weave-gs-nginx-simple"
+    $MY_SSH $SSH_OPTS ubuntu@$myHostIP "sudo weave run --with-dns $myContainerIP/24 -ti -h $myDnsName -d -p 80:80 pessoa/weave-gs-nginx-simple"
 
 }
 
@@ -102,6 +102,10 @@ while [ $TMP_HOSTCOUNT -lt $WEAVE_AWS_DEMO_HOSTCOUNT ]; do
     CONTAINER_OFFSET=$(expr $CONTAINER_OFFSET + 1 )
     TMP_HOSTCOUNT=$(expr $TMP_HOSTCOUNT + 1)
 done
+
+
+echo "Launching dnsmasq"
+$MY_SSH $SSH_OPTS ubuntu@$WEAVE_AWS_DEMO_HOST1 "sudo weave run --with-dns 10.3.1.100/24 -h dns.weave.local --cap-add=NET_ADMIN andyshinn/dnsmasq"
 
 echo "Launching our Nginx front end"
 
