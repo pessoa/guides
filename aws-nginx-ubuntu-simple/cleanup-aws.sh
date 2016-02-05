@@ -9,6 +9,14 @@
 # to shutdown and remove these demo instances.
 #
 
+# Clean up autoscaling bits
+SCALEOUT_ALARM=AddCapacity
+SCALEIN_ALARM=RemoveCapacity
+aws cloudwatch delete-alarms --alarm-names $SCALEOUT_ALARM
+aws cloudwatch delete-alarms --alarm-names $SCALEIN_ALARM
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name asg-auto-cli --force-delete
+aws autoscaling delete-launch-configuration --launch-configuration-name lc-auto-cli
+
 WEAVEDEMO_GROUPNAME=${WEAVEDEMO_GROUPNAME:-weavedemo}
 WEAVEDEMO_KEY=${MY_KEY:-$WEAVEDEMO_GROUPNAME-key}
 MY_SLEEP=0
