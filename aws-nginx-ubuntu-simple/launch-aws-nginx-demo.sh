@@ -19,8 +19,8 @@ KEYPAIR=$WEAVEDEMO_GROUPNAME-key
 
 MY_R_FILTER="Name=instance-state-name,Values=running"
 MY_SSH="ssh -i $MY_KEY"
-DNS_OFFSET=1
-CONTAINER_OFFSET=1
+DNS_OFFSET=2
+CONTAINER_OFFSET=2
 DNS_BASE=10.2.1
 APP_BASE=10.3.1
 
@@ -83,6 +83,10 @@ while [ $TMP_HOSTCOUNT -lt $WEAVE_AWS_DEMO_HOSTCOUNT ]; do
     TMP_HOSTCOUNT=$(expr $TMP_HOSTCOUNT + 1)
 done
 
+echo "Launching our Nginx front end"
+
+launchNginx $WEAVE_AWS_DEMO_HOST1 $CONTAINER_OFFSET
+
 echo "Launching 3 Simple PHP App Containers on each AWS host"
 
 TMP_HOSTCOUNT=0
@@ -105,8 +109,4 @@ done
 
 
 echo "Launching dnsmasq"
-$MY_SSH $SSH_OPTS ubuntu@$WEAVE_AWS_DEMO_HOST1 "sudo weave run --with-dns 10.3.1.100/24 -h dns.weave.local --cap-add=NET_ADMIN andyshinn/dnsmasq"
-
-echo "Launching our Nginx front end"
-
-launchNginx $WEAVE_AWS_DEMO_HOST1 $CONTAINER_OFFSET
+$MY_SSH $SSH_OPTS ubuntu@$WEAVE_AWS_DEMO_HOST1 "sudo weave run --with-dns 10.3.1.1/24 -h dns.weave.local --cap-add=NET_ADMIN andyshinn/dnsmasq"

@@ -89,6 +89,7 @@ OUR_IP_ADDRESSES=$(aws ec2 describe-instances --output text --filters $MY_R_FILT
 
 if [ -f $WEAVEDEMO_ENVFILE ]; then
     rm -f $WEAVEDEMO_ENVFILE
+    rm -f user-data.sh
 fi
 
 HOSTS_ARRAY=
@@ -111,3 +112,5 @@ done
 HOSTS_ARRAY=$(echo $HOSTS_ARRAY | sed -e "s/^\s+//")
 echo "export WEAVE_AWS_DEMO_HOSTCOUNT=$WEAVEDEMO_HOSTCOUNT" >> $WEAVEDEMO_ENVFILE
 echo "export WEAVE_AWS_DEMO_HOSTS=($HOSTS_ARRAY)" >> $WEAVEDEMO_ENVFILE
+
+sed "s/WEAVE_AWS_DEMO_HOST1/$WEAVE_AWS_DEMO_HOST1/g" < user-data.sh.tmpl > user-data.sh
