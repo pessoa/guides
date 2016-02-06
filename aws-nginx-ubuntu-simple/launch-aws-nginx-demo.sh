@@ -110,3 +110,23 @@ done
 
 echo "Launching dnsmasq"
 $MY_SSH $SSH_OPTS ubuntu@$WEAVE_AWS_DEMO_HOST1 "sudo weave run --with-dns 10.3.1.1/24 -h dns.weave.local --cap-add=NET_ADMIN andyshinn/dnsmasq"
+
+# Auto Scaling
+
+MIN_SIZE=1
+MAX_SIZE=2
+PERIOD=120
+UP_THRESHOLD=10
+DOWN_THRESHOLD=40
+REGION=$(aws configure list | grep region | awk '{print $2}')
+
+echo "Create launch config"
+aws autoscaling create-launch-configuration --launch-configuration-name lc-auto-cli --image-id ami-b683b0ab --key-name weavedemo-key --security-groups weavedemo --user-data "`cat user-data.sh`" --instance-type t2.micro
+echo "Create scaling group"
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name asg-auto-cli --launch-configuration-name lc-auto-cli --min-size $MIN_SIZE --max-size $MAX_SIZE --availability-zones "${REGION}a" "${REGION}b"
+echo "Create scaling policies"
+ARN_SCALEOUT=$(aws autoscaling put-scaling-policy --policy-name scaleout-auto-cli --auto-scaling-group-name asg-auto-cli --scaling-adjustment 1 --adjustment-type ChangeInCapacity | grep -Po '"'"PolicyARN"'"\s*:\s*"\K([^"]*)')
+ARN_SCALEIN=$(aws autoscaling put-scaling-policy --policy-name scalein-auto-cli --auto-scaling-group-name asg-auto-cli --scaling-adjustment -1 --adjustment-type ChangeInCapacity | grep -Po '"'"PolicyARN"'"\s*:\s*"\K([^"]*)')
+echo "Create alarms"
+aws cloudwatch put-metric-alarm --alarm-name AddCapacity --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 120 --threshold $UP_THRESHOLD --comparison-operator GreaterThanOrEqualToThreshold --dimensions "Name=AutoScalingGroupName,Value=asg-auto-cli" --evaluation-periods 2 --alarm-actions $ARN_SCALEOUT
+aws cloudwatch put-metric-alarm --alarm-name RemoveCapacity --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 120 --threshold $DOWN_THRESHOLD --comparison-operator LessThanOrEqualToThreshold --dimensions "Name=AutoScalingGroupName,Value=asg-auto-cli" --evaluation-periods 2 --alarm-actions $ARN_SCALEIN
